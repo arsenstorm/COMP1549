@@ -1,0 +1,11 @@
+{
+	"name": "groupchat",
+	"version": "1.0.0",
+	"description": "A simple group chat application",
+	"scripts": {
+		"test": "mvn test",
+		"build": "mvn clean package",
+		"start": "java -cp target/groupchat-1.0-SNAPSHOT-jar-with-dependencies.jar com.comp1549.groupchat.server.GroupServer",
+		"client": "java -cp target/groupchat-1.0-SNAPSHOT-jar-with-dependencies.jar com.comp1549.groupchat.client.GroupClient"
+	}
+}
