@@ -1,12 +1,10 @@
 package com.comp1549.groupchat.client;
 
-import com.comp1549.groupchat.model.Member;
 import com.comp1549.groupchat.model.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
@@ -18,36 +16,33 @@ public class GroupClient {
     private static final int HEARTBEAT_INTERVAL = 15; // seconds
 
     private final String id;
-    private final String serverHost;
-    private final int serverPort;
     private final Socket socket;
     private final ObjectOutputStream out;
     private final ObjectInputStream in;
     private final ScheduledExecutorService scheduler;
+    private final Scanner scanner;
     private volatile boolean running;
-    private Member currentHost;
 
     public GroupClient(String id, String serverHost, int serverPort) throws IOException {
         this.id = id;
-        this.serverHost = serverHost;
-        this.serverPort = serverPort;
         this.socket = new Socket(serverHost, serverPort);
         this.out = new ObjectOutputStream(socket.getOutputStream());
         this.in = new ObjectInputStream(socket.getInputStream());
         this.scheduler = Executors.newScheduledThreadPool(2);
+        this.scanner = new Scanner(System.in);
         this.running = true;
     }
 
     public void start() throws IOException {
         // Send join message
-        Message joinMessage = new Message(id, null, Message.Type.JOIN, 
-            String.format("Joining from %s:%d", socket.getLocalAddress().getHostAddress(), socket.getLocalPort()));
+        Message joinMessage = new Message(id, null, Message.Type.JOIN,
+                String.format("Joining from %s:%d", socket.getLocalAddress().getHostAddress(), socket.getLocalPort()));
         out.writeObject(joinMessage);
         out.flush();
 
         // Start heartbeat sender
-        scheduler.scheduleAtFixedRate(this::sendHeartbeat, 
-            HEARTBEAT_INTERVAL, HEARTBEAT_INTERVAL, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::sendHeartbeat,
+                HEARTBEAT_INTERVAL, HEARTBEAT_INTERVAL, TimeUnit.SECONDS);
 
         // Start message receiver thread
         new Thread(this::receiveMessages).start();
@@ -98,7 +93,7 @@ public class GroupClient {
 
     private void updateMemberList(String memberListStr) {
         System.out.println("\n=== Current Group Members ===");
-        
+
         // Handle empty list case
         if (memberListStr == null || memberListStr.trim().equals("[]")) {
             System.out.println("No members connected");
@@ -107,31 +102,30 @@ public class GroupClient {
 
         // Remove brackets and split by "Member{"
         String[] members = memberListStr.substring(1, memberListStr.length() - 1).split("Member\\{");
-        
+
         for (String member : members) {
             // Skip empty entries
-            if (member.trim().isEmpty()) continue;
-            
+            if (member.trim().isEmpty())
+                continue;
+
             try {
                 // Extract values using regex patterns for safety
-                String id = member.matches(".*id='([^']*)'.*") ? 
-                    member.replaceAll(".*id='([^']*)'.*", "$1") : "unknown";
-                    
-                String ip = member.matches(".*ip=([^,]*).*") ?
-                    member.replaceAll(".*ip=([^,]*).*", "$1") : "unknown";
-                    
-                String port = member.matches(".*port=(\\d+).*") ?
-                    member.replaceAll(".*port=(\\d+).*", "$1") : "unknown";
-                    
+                String id = member.matches(".*id='([^']*)'.*") ? member.replaceAll(".*id='([^']*)'.*", "$1")
+                        : "unknown";
+
+                String ip = member.matches(".*ip=([^,]*).*") ? member.replaceAll(".*ip=([^,]*).*", "$1") : "unknown";
+
+                String port = member.matches(".*port=(\\d+).*") ? member.replaceAll(".*port=(\\d+).*", "$1")
+                        : "unknown";
+
                 boolean isHost = member.contains("host=true");
 
                 // Format and print each member
-                System.out.printf("%-15s %s:%-6s %s%n", 
-                    id,
-                    ip,
-                    port,
-                    isHost ? "[Host]" : ""
-                );
+                System.out.printf("%-15s %s:%-6s %s%n",
+                        id,
+                        ip,
+                        port,
+                        isHost ? "[Host]" : "");
             } catch (Exception e) {
                 System.out.println("Error parsing member: " + member);
             }
@@ -149,13 +143,12 @@ public class GroupClient {
     }
 
     private void startCommandLineInterface() {
-        Scanner scanner = new Scanner(System.in);
-
         while (running) {
             System.out.print("> ");
             String line = scanner.nextLine().trim();
-            
-            if (line.isEmpty()) continue;
+
+            if (line.isEmpty())
+                continue;
 
             String[] parts = line.split("\\s+", 3);
             try {
@@ -210,8 +203,9 @@ public class GroupClient {
         Message leaveMessage = new Message(id, null, Message.Type.LEAVE, "Leaving group");
         out.writeObject(leaveMessage);
         out.flush();
-        
+
         scheduler.shutdown();
+        scanner.close();
         socket.close();
         System.exit(0);
     }
@@ -233,4 +227,4 @@ public class GroupClient {
             logger.error("Error starting client", e);
         }
     }
-} 
+}
