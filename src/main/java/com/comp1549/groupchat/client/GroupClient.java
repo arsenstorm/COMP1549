@@ -158,14 +158,18 @@ public class GroupClient {
                             System.out.println("Usage: broadcast <message>");
                             continue;
                         }
-                        sendBroadcast(parts[1]);
+                        String message = line.substring("broadcast ".length());
+                        sendBroadcast(message);
                         break;
                     case "private":
                         if (parts.length < 3) {
                             System.out.println("Usage: private <recipient-id> <message>");
                             continue;
                         }
-                        sendPrivate(parts[1], parts[2]);
+                        String recipientId = parts[1];
+                        int messageStart = line.indexOf(recipientId) + recipientId.length() + 1;
+                        String privateMessage = line.substring(messageStart);
+                        sendPrivate(recipientId, privateMessage);
                         break;
                     case "quit":
                         quit();
