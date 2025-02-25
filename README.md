@@ -17,7 +17,7 @@ You can also use `npm run build` to build the project.
 ### Starting the Server
 
 ```bash
-java -cp target/groupchat-1.0-SNAPSHOT.jar com.comp1549.groupchat.server.GroupServer [port]
+java -cp target/groupchat-1.0-SNAPSHOT-jar-with-dependencies.jar com.comp1549.groupchat.server.GroupServer [port]
 ```
 
 You can also use `npm run start` to run the server.
@@ -27,12 +27,12 @@ Default port is 8080 if not specified.
 ### Starting a Client
 
 ```bash
-java -cp target/groupchat-1.0-SNAPSHOT.jar com.comp1549.groupchat.client.GroupClient <client-id> [server-host] [server-port]
+java -cp java -cp target/groupchat-1.0-SNAPSHOT-jar-with-dependencies.jar com.comp1549.groupchat.client.GroupClient <client-id> [server-host] [server-port]
 ```
 
 Example:
 ```bash
-java -cp target/groupchat-1.0-SNAPSHOT.jar com.comp1549.groupchat.client.GroupClient user1 localhost 8080
+java -cp java -cp target/groupchat-1.0-SNAPSHOT-jar-with-dependencies.jar com.comp1549.groupchat.client.GroupClient user1 localhost 8080
 ```
 
 You can also use `npm run client <client-id> <server-host> <server-port>` to start a client.
